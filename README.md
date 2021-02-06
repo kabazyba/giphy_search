@@ -2,14 +2,15 @@
 
  Image search application on giphy.com
 
+ Flutter 1.24.0-2.0.pre.55 • channel master •
 
  The project uses the following dependencies:
 
-   provider: for data and state manage
-   dio: for REST API
-   shimmer: for image downloading animation
-   cached_network_image: for display image
-   fluttertoast: for display information toast
+  provider: for data and state manage
+  dio: for REST API
+  shimmer: for image downloading animation
+  cached_network_image: for display image
+  fluttertoast: for display information toast
 
 
 
