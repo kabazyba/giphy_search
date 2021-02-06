@@ -11,42 +11,31 @@ class SearchProvider extends ChangeNotifier {
     _apiServiceRepository = ApiServiceRepository(baseApiUrl);
   }
 
-  Response<GiphyData> giphyListResponse = Response.none();
+  Response giphyListResponse = Response.none();
 
   List<Gif> giphyList = [];
-  int totalCount;
-  int offset;
+  int totalCount=0;
+  int offset=0;
   String question;
 
-  Future<void> fetchGifList(String question) async {
+  Future<void> fetchGifList({String question}) async {
     giphyListResponse = Response.loading('');
     notifyListeners();
-    this.question = question;
+    if(question!=null){
+      this.question = question;
+    }
     try {
-      final response = await _apiServiceRepository.fetchGiphy(queryParameters: {'q': question});
-      giphyListResponse = Response.completed(GiphyData.fromRawJson(response));
-      giphyList = giphyListResponse.data.gifList;
-      totalCount = giphyListResponse.data.pagination.totalCount;
+      final response = await _apiServiceRepository.fetchGiphy(queryParameters: {'q': this.question, 'offset': offset});
+      giphyListResponse = Response.completed('');
+      var tmpGifList = GiphyData.fromRawJson(response).gifList;
+      if (tmpGifList != null) {
+        giphyList.addAll(tmpGifList);
+      }
+      totalCount = GiphyData.fromRawJson(response).pagination.totalCount;
       offset = giphyList.length;
       if (giphyList.isEmpty) {
         ToastService.showMessage(message: 'sorry we didn\'t find anything');
       }
-      notifyListeners();
-    } catch (e) {
-      giphyListResponse = Response.error(e.toString());
-      ToastService.showMessage(message: "Sorry something went wrong");
-      notifyListeners();
-    }
-  }
-
-  Future<void> additionalFetchGifList() async {
-    giphyListResponse = Response.loading('');
-    notifyListeners();
-    try {
-      final response = await _apiServiceRepository.fetchGiphy(queryParameters: {'q': question, 'offset': offset});
-      giphyListResponse = Response.completed(GiphyData.fromRawJson(response));
-      giphyList.addAll(giphyListResponse.data.gifList);
-      offset = giphyList.length;
       notifyListeners();
     } catch (e) {
       giphyListResponse = Response.error(e.toString());

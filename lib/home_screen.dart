@@ -1,14 +1,15 @@
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:giphy_search/app_config.dart';
 import 'package:giphy_search/network/response.dart';
+import 'package:giphy_search/popup/popup.dart';
 import 'package:giphy_search/providers/search_provider.dart';
+import 'package:giphy_search/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-
-const shimmerLightColor = Color(0xffF5F5F5);
-const shimmerDarkColor = Color(0xffE0E0E0);
 
 class MainScreen extends StatefulWidget {
   @override
@@ -29,7 +30,7 @@ class _MainScreenState extends State<MainScreen> {
             !scrollController.position.outOfRange &&
             searchProvider.giphyList.length < searchProvider.totalCount) {
           if (searchProvider.giphyListResponse.status != Status.loading) {
-            await searchProvider.additionalFetchGifList();
+            await searchProvider.fetchGifList();
           }
         }
       });
@@ -48,6 +49,25 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     var searchProvider = Provider.of<SearchProvider>(context);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      Utils.responseListener(
+          response: searchProvider.giphyListResponse,
+          onLoading: () {
+            if (searchProvider.offset == 0) {
+              PopUp.showPopUp(context);
+            }
+          },
+          onCompleted: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+          },
+          onError: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+          });
+    });
     return Scaffold(
         appBar: AppBar(
           title: Row(
@@ -172,6 +192,8 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> search() async {
     FocusScope.of(context).requestFocus(new FocusNode());
-    Provider.of<SearchProvider>(context, listen: false).fetchGifList(searchKeyWordController.text);
+    if (searchKeyWordController.text.isNotEmpty) {
+      Provider.of<SearchProvider>(context, listen: false).fetchGifList(question: searchKeyWordController.text);
+    }
   }
 }

@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.giphy_search">
+   <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="giphy_search"
+        android:label="Giphy Search"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
