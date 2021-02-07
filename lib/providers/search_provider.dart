@@ -14,19 +14,20 @@ class SearchProvider extends ChangeNotifier {
   Response giphyListResponse = Response.none();
 
   List<Gif> giphyList = [];
-  int totalCount=0;
-  int offset=0;
+  int totalCount = 0;
+  int offset = 0;
   String question;
 
   Future<void> fetchGifList({String question}) async {
     giphyListResponse = Response.loading('');
     notifyListeners();
-    if(question!=null){
+    if (question != null) {
       this.question = question;
     }
     try {
       final response = await _apiServiceRepository.fetchGiphy(queryParameters: {'q': this.question, 'offset': offset});
       giphyListResponse = Response.completed('');
+
       var tmpGifList = GiphyData.fromRawJson(response).gifList;
       if (tmpGifList != null) {
         giphyList.addAll(tmpGifList);
@@ -34,7 +35,7 @@ class SearchProvider extends ChangeNotifier {
       totalCount = GiphyData.fromRawJson(response).pagination.totalCount;
       offset = giphyList.length;
       if (giphyList.isEmpty) {
-        ToastService.showMessage(message: 'sorry we didn\'t find anything');
+        ToastService.showMessage(message: 'Sorry we didn\'t find anything');
       }
       notifyListeners();
     } catch (e) {

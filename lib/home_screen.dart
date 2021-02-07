@@ -152,25 +152,30 @@ class _MainScreenState extends State<MainScreen> {
       itemCount: searchProvider.giphyList.length,
       shrinkWrap: true,
       itemBuilder: (BuildContext context, int index) {
-        return CachedNetworkImage(
-          fit: BoxFit.cover,
-          imageUrl: searchProvider.giphyList[index].images.original.webp ??
-              searchProvider.giphyList[index].images.original.url,
-          placeholder: (context, url) {
-            return Padding(
-              padding: EdgeInsets.all(2),
-              child: Shimmer.fromColors(
-                  enabled: true,
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: Colors.white,
-                  ),
-                  baseColor: shimmerDarkColor,
-                  highlightColor: shimmerLightColor),
-            );
-          },
-        );
+        var imgUrl = getImageUrl(searchProvider, index);
+        return imgUrl != null
+            ? CachedNetworkImage(
+                fit: BoxFit.cover,
+                imageUrl: imgUrl,
+                errorWidget: (context, url, error) {
+                  return buildErrorWidget();
+                },
+                placeholder: (context, url) {
+                  return Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Shimmer.fromColors(
+                        enabled: true,
+                        child: Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          color: Colors.white,
+                        ),
+                        baseColor: shimmerDarkColor,
+                        highlightColor: shimmerLightColor),
+                  );
+                },
+              )
+            : buildErrorWidget();
       },
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
     );
@@ -193,7 +198,27 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> search() async {
     FocusScope.of(context).requestFocus(new FocusNode());
     if (searchKeyWordController.text.isNotEmpty) {
-      Provider.of<SearchProvider>(context, listen: false).fetchGifList(question: searchKeyWordController.text);
+      Provider.of<SearchProvider>(context, listen: false)
+        ..clearData()
+        ..fetchGifList(question: searchKeyWordController.text);
     }
+  }
+
+  String getImageUrl(SearchProvider searchProvider, int index) {
+    return searchProvider.giphyList[index].images?.original?.webp ??
+        searchProvider.giphyList[index].images?.original?.url;
+  }
+
+  Widget buildErrorWidget() {
+    return Container(
+        color: shimmerDarkColor,
+        child: Center(
+            child: Container(
+                padding: EdgeInsets.all(10),
+                margin: EdgeInsets.all(2),
+                child: Text(
+                  'Sorry something went wrong',
+                  textAlign: TextAlign.center,
+                ))));
   }
 }
